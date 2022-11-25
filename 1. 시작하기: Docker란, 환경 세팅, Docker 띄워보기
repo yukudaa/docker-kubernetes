@@ -1,32 +1,22 @@
 컨테이너와 도커
+구글에 도커를 검색해보면 "리눅스의 응용 프로그램들을 프로세스 격리 기술들을 사용해 컨테이너로 실행하고 관리하는 오픈 소스 프로젝트"라고 나온다. 
+여기서 컨테이너란 어플리케이션 실행파일과 실행에 필요한 시스템 설정, 도구, 패키지를 모두 포함하고 있는 소프트웨어 유닛을 말한다. 
+Spring Boot 웹서버를 컨테이너로 실행한다고 하면 여기에는 Spring Boot 실행파일과 Java 실행환경, Nginx 패키지와 설정파일이 모두 포함되어 있을 것이다.
 
- 
-
-
-구글에 도커를 검색해보면 "리눅스의 응용 프로그램들을 프로세스 격리 기술들을 사용해 컨테이너로 실행하고 관리하는 오픈 소스 프로젝트"라고 나온다. 여기서 컨테이너란 어플리케이션 실행파일과 실행에 필요한 시스템 설정, 도구, 패키지를 모두 포함하고 있는 소프트웨어 유닛을 말한다. Spring Boot 웹서버를 컨테이너로 실행한다고 하면 여기에는 Spring Boot 실행파일과 Java 실행환경, Nginx 패키지와 설정파일이 모두 포함되어 있을 것이다.
-
- 
-
- 
 
 실습 환경 세팅
+Docker Desktop을 사용하면 윈도우에서 더욱 쉽고 간편하게 도커를 사용해볼 수 있다. 
+Docker Desktop은 공식 홈페이지(https://docs.docker.com/desktop/install/windows-install/)에서 설치할 수 있는데, 시스템 요구사항을 자세히 읽어보아야 한다.
+나의 경우 "BIOS-level hardware virtualization support must be enabled in the BIOS settings. For more information, see Virtualization." 문구를 제대로 읽지 않아서 애를 먹었다.
+정상적으로 설치가 끝났다면 docker desktop이 실행되고 에러가 발생하지 않을 것이다. docker desktop 실행후 에러가 발생한다면 시스템 요구사항을 다시 한번 자세히 읽어보자.
 
- 
-
-
-Docker Desktop을 사용하면 윈도우에서 더욱 쉽고 간편하게 도커를 사용해볼 수 있다. Docker Desktop은 공식 홈페이지(https://docs.docker.com/desktop/install/windows-install/)에서 설치할 수 있는데, 시스템 요구사항을 자세히 읽어보아야 한다. 나의 경우 "BIOS-level hardware virtualization support must be enabled in the BIOS settings. For more information, see Virtualization." 문구를 제대로 읽지 않아서 애를 먹었다. 정상적으로 설치가 끝났다면 docker desktop이 실행되고 에러가 발생하지 않을 것이다. docker desktop 실행후 에러가 발생한다면 시스템 요구사항을 다시 한번 자세히 읽어보자.
-
- 
-
- 
 
 Docker 컨테이너 실행해보기
+나중에 다시 설명하겠지만 컨테이너를 실행하기 위해서는 이미지 파일이 필요하다. 
+이미지 파일은 직접 만들수도 있고 만들어져있는 이미지를 사용할 수 있다.
+Docker Hub(https://hub.docker.com/)에 가면 잘 정의되어 만들어진 이미지들을 볼 수 있다.
+여기서 node라는 이미지를 사용해서 컨테이너를 실행해 보자.
 
- 
-
-나중에 다시 설명하겠지만 컨테이너를 실행하기 위해서는 이미지 파일이 필요하다. 이미지 파일은 직접 만들수도 있고 만들어져있는 이미지를 사용할 수 있다. Docker Hub(https://hub.docker.com/)에 가면 잘 정의되어 만들어진 이미지들을 볼 수 있다. 여기서 node라는 이미지를 사용해서 컨테이너를 실행해 보자.
-
- 
 
 // node라는 이름이 이미지로 컨테이너를 실행한다.
 // local에는 node라는 이름의 이미지가 없으므로 docker hub에서 가져온다.
