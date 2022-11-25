@@ -1,0 +1,140 @@
+Dockerfile과 이미지, 컨테이너
+앞에서 도커 컨테이너란 어플리케이션 실행파일과 실행에 필요한 시스템 설정, 도구, 패키지를 모두 포함하고 있는 소프트웨어 유닛이라고 말했었다. 
+이러한 도커 컨테이너를 만들기 위해서는 여러 과정을 거쳐야 한다. 먼저 Dockerfile을 만들어야 한다.
+Dockerfile은 필요한 리눅스 환경을 만들기 위해 필요한 파일이나 명령어가 정의되어있는 설계서이다. 
+설계서인 Dockerfile을 빌드하면 도커 이미지가 만들어진다. 
+도커 이미지는 리눅스 환경에서 동작할 어플리케이션 실행파일과 실행에 필요한 시스템 설정, 도구, 패키지의 묶음 파일이다. 
+마지막으로 파일 상태인 도커 이미지를 자원을 할당하여 실행시킨것이 컨테이너이다.
+
+NodeJS 앱을 도커로 띄워보자
+
+
+도커로 NodeJS 앱을 띄워보면서 Dockerfile과 이미지, 컨테이너에 대해 더 공부해보자.
+오른쪽과 같은 페이지를 보여주는 NodeJS 앱이 있다. 이 앱을 바탕으로 도커 컨테이너를 띄우기 위해서는 먼저 Dockerfile을 만들어야 한다.
+그래야 도커 이미지를 만들수 있고, 도커 이미지로 컨테이너를 띄울 수 있다.
+
+
+FROM node
+
+WORKDIR /app
+
+COPY . /app
+
+RUN npm install
+
+EXPOSE 80
+
+CMD ["node", "server.js"]
+Dockerfile을 위와같이 작성한다. From node는 node라는 도커 이미지를 바탕으로 새로운 이미지를 만들겠다는 의미이다. 
+node 이미지를 활용한 덕분에 NodeJS 실행 환경을 위한 별도의 작업이 필요없어졌다. 
+WORKDIR /app은 뒤로 나올 작업들의 기본 디렉토리를 /app으로 한다는 의미이다.
+COPY . /app은 빌드를 실행하는 위치(.)에 있는 파일, 폴더들을 리눅스 환경의 /app 폴더로 복사하라는 의미이다. 
+WORKDIR이 /app으로 되어있기 때문에 COPY . ./로 해도 무방하다. 
+RUN npm install은 npm install 명령어를 실행하라는 의미이다. 
+이때 WORKDIR이 /app으로 되어있기 때문에 /app에서 npm install을 실해한다.
+EXPOSE 80은 80번 포트를 외부에 노출하겠다는 의미인데, 실제 동작에는 의미가 없는 주석 코드이다.
+CMD ["node", "server.js"]는 컨테이너가 실행된 이후 node server.js 명령어를 실행하라는 의미이다.
+RUN과 CMD의 차이점은 RUN은 이미지를 만들기 이전에 실행되어서 RUN의 결과가 이미지에 포함되고, CMD는 이미지가 만들어지고 컨테이너가 실행된 이후에 동작한다는 것이다.
+
+ 
+> docker build .
+[+] Building 3.2s (9/9) FINISHED
+...
+=> => writing image sha256:{imageId}
+Dockerfile을 작성이 끝나면 docker build 명령어를 통해 도커 이미지를 만들수 있다.
+위 내용을 보면 855a42c00a21aed224b540b4b2e73f8730dba2bb075611b5f701b2c826ecd886라는 이름으로 도커 이미지가 만들어졌다.
+
+ 
+ docker run -p 3000:80 {imageId}
+docker run 만들어진 도커 이미지를 도커 컨테이너로 실행시킬 수 있다.
+이미지의 이름은 방금 빌드한 도커 이미지의 이름을 사용하면 된다.
+-p 3000:80 명령어는 도커 컨테이너를 실행하는 환경의 3000번 포트와 도커 컨테이너 내부의 80번 포트는 연결한다는 의미이다.
+이렇게 되면 도커 컨테이너는 NodeJS 앱을 실행하고 80번 포트로 접속할 수 있게 열어둔 상태이고, 내 컴퓨터의 3000번 포트는 실행된 도커 컨테이너의 80번 포트로 통하게 된다.
+
+
+localhost:8000로 도커 컨테이너의 80번 포트로 띄워진 NodeJS 앱에 접속했다
+ 
+
+ 
+
+착각하지 말자
+
+ 
+
+// server.js 파일에서 "My Course Goal" > "My Course Goal!!"로 변경
+app.get('/', (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <link rel="stylesheet" href="styles.css">
+      </head>
+      <body>
+        <section>
+          <h2>My Course Goal!!</h2>
+          <h3>${userGoal}</h3>
+        </section>
+        <form action="/store-goal" method="POST">
+          <div class="form-control">
+            <label>Course Goal</label>
+            <input type="text" name="goal">
+          </div>
+          <button>Set Course Goal</button>
+        </form>
+      </body>
+    </html>
+  `);
+});
+ 
+
+> npm run build
+> docker run -p 3000:80 {imageId}
+NodeJS 앱 소스인 server.js 파일에서 "My Course Goal" > "My Course Goal!!"로 변경하였다. 
+그리고 npm run build 명령어를 통해 변경된 내용을 다시 빌드하였고 도커 컨테이너를 실행하였다.
+이제 다시 localhost:3000으로 접속하면 변경한 내용이 반영되어있을까? 정답은 "아니요"이다.
+
+
+localhost:3000으로 접속해보면 여전히 "My Course Goal"으로 문구가 나온다.
+이는 도커 컨테이너를 띄우는 과정을 생각해보면 당연한 것이다. 
+도커 컨테이너를 띄우기 위해서는 제일 먼저 
+1) 소스파일과 dockerfile을 준비한다. 
+2) 소스파일과 dockerfile을 빌드하여 도커 이미지를 생성한다.
+3) 도커 이미지로 도커 컨테이너를 띄운다.
+도커 컨테이너는 도커 이미지로 돌아가고 도커 이미지는 소스파일과 dockerfile의 빌드로 만들어진다. 
+소스파일인 server.js을 변경하여도 기존 도커 이미지에는 아무런 영향이 없다. 
+소스 변경내용을 반영하기위해서는 다시 도커 빌드를 수행하여 새로운 이미지를 만들어야 한다.
+
+ 
+
+이미지 레이어
+
+ 
+
+> bocker build .
+ => [internal] load build definition from Dockerfile                                                                                                                                                           0.0s 
+ => => transferring dockerfile: 31B                                                                                                                                                                            0.0s 
+ => [internal] load .dockerignore                                                                                                                                                                              0.0s 
+ => => transferring context: 2B                                                                                                                                                                                0.0s 
+ => [internal] load metadata for docker.io/library/node:latest                                                                                                                                                 0.0s 
+ => [1/4] FROM docker.io/library/node                                                                                                                                                                          0.0s 
+ => [internal] load build context                                                                                                                                                                              0.0s 
+ => => transferring context: 1.14kB                                                                                                                                                                            0.0s 
+ => CACHED [2/4] WORKDIR /app                                                                                                                                                                                  0.0s 
+ => [3/4] COPY . /app                                                                                                                                                                                          0.0s 
+ => [4/4] RUN npm install                                                                                                                                                                                      2.2s 
+ => exporting to image                                                                                                                                                                                         0.2s 
+ => => exporting layers                                                                                                                                                                                        0.1s 
+ => => writing image sha256:ff3c8a9de9667e0c4f3f5a2944cf2a9923d48ab67bbf7f71ec7a81b84d6d2bcb                                                                                                                   0.0s
+변경된 server.js 소스를 반영한 이미지를 만들기위해 docker build . 명령어를 실행하였다.
+그리고 나오는 내용을 보면 Dockerfile에 있는 명령어들이 [1/4] FROM docker.io/library/node, [2/4] WORKDIR /app, [3/4] COPY . /app, [4/4] RUN npm install 순서에따라 진행되고 있다.
+그리고 [2/4] WORKDIR /app 명령어 앞에는 CACHED 라고 표시되어있다.
+이는 도커가 이미지를 레이어 단위로 빌드하기 떄문이다. 
+빌드할때 Dockerfile에 있는 명령어마다 새로운 이미지 레이어를 만들고 기록한다. 
+그리고 이전과 같은 순서로 빌드가 진행되면 이전에 빌드된 이미지레이어를 그대로 사용한다. 
+[2/4] WORKDIR /app 까지는 변경된 내용이 없기때문에 CHCHED로 기존의 이미지 레이어를 사용하고, server.js 파일이 변경되어있기 때문에 [3/4] COPY . /app에서 새로운 이미지 레이어를 만들면서 빌드를 진행한다.
+
+ 
+
+
+이러한 이미지 레이어 덕분에 도커의 빌드는 효율적으로 진행될 수 있다.
+그리고 기존의 Dockerfile에서 새로 추가되거나 변경되어야하는 내용이 있는 경우 기존 Dockerfile을 어떻게 어떻게 수정하느냐에 따라서 기존 레이어를 재사용 하는 범위가 달라지기 때문에 빌드 시간에 영향을 준다.
+따라서 Dockerfile을 작성할때나 수정할 때 효율적으로 레이어 재사용을 할 수 있도록 고려하여야 한다.
